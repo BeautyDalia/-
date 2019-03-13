@@ -119,7 +119,14 @@ class NetEase(object):
             self.next_page().click()  # 如果有下一页就点
             time.sleep(3)
             # self.wait.until(ec.presence_of_element_located((By.XPATH, ".//ul[@id='main-box']/li[last()]")))
-            next_page_source = self.driver.page_source   # 下一页源码
+            try:
+                next_page_source = self.driver.page_source   # 下一页源码
+            except Exception as e:
+                print('=========>>>获取fans源码错误：', e)
+                self.next_page().click()  # 如果有下一页就点
+                time.sleep(3)
+                next_page_source = self.driver.page_source   # 下一页源码
+
             nps = etree.HTML(next_page_source, parser=etree.HTMLParser(encoding='utf-8'))
             return self.funs(nps)  # 下一页源码
         else:
@@ -157,7 +164,14 @@ class NetEase(object):
             time.sleep(3)
             self.wait.until(ec.presence_of_element_located((By.XPATH, ".//ul[@id='main-box']/li[last()]")))
 
-            next_follow_source = self.driver.page_source  # 下一页源码
+            try:
+                next_follow_source = self.driver.page_source  # 下一页源码
+
+            except Exception as e:
+                print('=========>>>获取follow源码错误：', e)
+                self.next_page().click()  # 如果有下一页就点
+                time.sleep(3)
+                next_follow_source = self.driver.page_source   # 下一页源码
             gz = etree.HTML(next_follow_source, parser=etree.HTMLParser(encoding='utf-8'))
 
             ff = self.fun_info_xpath(gz)   # 关注列表
@@ -229,7 +243,6 @@ class NetEase(object):
 
     def run(self):
         for url in self.read_mysql():
-            print('=======>>>', url)
             # try:
             self.to_sql(url)
             self.funs(url)
@@ -237,10 +250,11 @@ class NetEase(object):
             #     print('=======>>>请求发生错误，错误内容为：', e)
             #     print('=======>>>发生错误url为：', url)
             #     continue
-        self.run()
+        if self.read_mysql():
+            self.run()
 
 
 if __name__ == '__main__':
     n = NetEase()
-    # n.run()
-    n.funs('https://music.163.com/#/user/home?id=650120')
+    n.run()
+    # n.funs('https://music.163.com/#/user/home?id=650120')
